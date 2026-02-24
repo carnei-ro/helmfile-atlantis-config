@@ -1,15 +1,21 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+
 	"bufio"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 )
+
+// Version can be set at build time with: -ldflags="-X main.Version=v1.0.0"
+var Version = "dev"
 
 type AutoPlan struct {
 	Enabled      bool     `yaml:"enabled"`
@@ -56,6 +62,14 @@ func walkDir(root string, depthToHelmfiles int, helmfileFileName string) ([]stri
 }
 
 func main() {
+	versionFlag := flag.Bool("version", false, "print version and exit")
+	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
+
 	automerge := getenvBool("AUTOMERGE", "true")
 	parallelApply := getenvBool("PARALLEL_APPLY", "false")
 	parallelPlan := getenvBool("PARALLEL_PLAN", "false")
