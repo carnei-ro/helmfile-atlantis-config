@@ -2,7 +2,7 @@
 
 Heavily inspired by [terragrunt-atlantis-config](https://github.com/transcend-io/terragrunt-atlantis-config), this tool creates Atlantis YAML configurations for Helmfile projects by:
 
-- Finding all `helmfile.yaml` inside some folder (default to `clusters`) with a fixed depth (default to `3`)
+- Finding all `helmfile.yaml` (customizable via env var `HELMFILE_FILE_NAME`) inside some folder (default to `clusters`) with a fixed depth (default to `3`)
 - Check if the file has any line with `_atlantis_needs: $REPO_REL_DIR_TO_THE_DEPENDENCY`
 - Construct the YAML in Atlantis' config spec version 3
 

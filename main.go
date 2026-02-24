@@ -41,13 +41,13 @@ func getenvBool(name string, defaultValue string) bool {
 	return strings.ToLower(val) == "true" || strings.ToLower(val) == "y" || strings.ToLower(val) == "yes"
 }
 
-func walkDir(root string, depthToHelmfiles int) ([]string, error) {
+func walkDir(root string, depthToHelmfiles int, helmfileFileName string) ([]string, error) {
 	var dirs []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if strings.Count(path, string(os.PathSeparator)) == depthToHelmfiles && strings.HasSuffix(path, "helmfile.yaml") {
+		if strings.Count(path, string(os.PathSeparator)) == depthToHelmfiles && strings.HasSuffix(path, helmfileFileName) {
 			dirs = append(dirs, filepath.Dir(path))
 		}
 		return nil
@@ -61,6 +61,10 @@ func main() {
 	parallelPlan := getenvBool("PARALLEL_PLAN", "false")
 	deleteSourceBranch := getenvBool("DELETE_SOURCE_BRANCH", "true")
 	baseDir := os.Getenv("BASE_DIR")
+	helmfileFileName := os.Getenv("HELMFILE_FILE_NAME")
+	if helmfileFileName == "" {
+		helmfileFileName = "helmfile.yaml"
+	}
 	if baseDir == "" {
 		baseDir = "clusters"
 	}
@@ -94,7 +98,7 @@ func main() {
 		},
 	}
 
-	helmfileDirs, _ := walkDir(baseDir, depthToHelmfiles)
+	helmfileDirs, _ := walkDir(baseDir, depthToHelmfiles, helmfileFileName)
 
 	for _, dir := range helmfileDirs {
 		atlantisConfig.Projects = append(atlantisConfig.Projects, Project{
@@ -110,7 +114,7 @@ func main() {
 	}
 
 	for _, dir := range helmfileDirs {
-		f, _ := os.Open(dir + "/helmfile.yaml")
+		f, _ := os.Open(dir + "/" + helmfileFileName)
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			line := scanner.Text()
